@@ -1,6 +1,5 @@
 import tkinter as tk
-import wmi
-import os
+from utilities import check_key_status
 
 class StatusIndicators(tk.Frame):
 
@@ -18,7 +17,7 @@ class StatusIndicators(tk.Frame):
 
     # calls its self after a specific <delay>
     def _loop(self):
-        if self.app.check_key_status():
+        if check_key_status():
             self.usb_status.config(text="USB key detected")
         else:
             self.usb_status.config(text="USB key not connected")

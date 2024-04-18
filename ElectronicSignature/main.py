@@ -1,10 +1,11 @@
 from cryptography.hazmat.primitives.asymmetric import rsa
 import tkinter as tk
+from tkinter import filedialog as fd
+from tkinter.messagebox import showerror
 import status_indicators
-import wmi
-import os
+from utilities import check_key_status
+from sign import sign_file
 
-USB_DRIVE_NAME = "PRIVATE_KEY"
 
 class App(tk.Tk):
     def __init__(self):
@@ -34,16 +35,6 @@ class App(tk.Tk):
         frame.tkraise()
 
 
-    def check_key_status(self):
-        c = wmi.WMI()
-        for disk in c.Win32_LogicalDisk():
-            if disk.DriveType == 2 and disk.VolumeName == USB_DRIVE_NAME:
-                usb_letter = disk.DeviceID
-                if os.path.exists(f"{usb_letter}\\private.pem"):
-                    return f"{usb_letter}\\private.pem"
-        return False
-
-
 class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -53,11 +44,42 @@ class StartPage(tk.Frame):
 
 
 class SignDocument(tk.Frame):
+    def chose_file(self):
+        self.file_to_sign = fd.askopenfilename(title="Choose a file to sign")
+
+    def sign(self, pin):
+        private_key_path = check_key_status()
+        if private_key_path == False:
+            showerror("Error", "Private key not detected")
+            return
+        if self.file_to_sign is None or self.file_to_sign == "":
+            showerror("Error", "Please select file to sign")
+            return
+        if pin == "":
+            showerror("Error", "Enter pin to connected private key")
+            return
+        
+        try:
+            sign_file(private_key_path, pin, self.file_to_sign)
+        except ValueError:
+            showerror("Error", "Incorect pin")
+            return
+        
+        self.controller.show_view("Start Page")
+        
+        
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        sign_button = tk.Button(self, text="Go back", command=lambda: controller.show_view("StartPage"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
-        sign_button.pack(side="bottom")
+        self.file_to_sign = None
+        pin_input = tk.Entry(self)
+        pin_input.pack()
+        pick_file_button = tk.Button(self, text="Pick file to sign", command=self.chose_file)
+        pick_file_button.pack()
+        sign_button = tk.Button(self, text="Sign file", command=lambda: self.sign(pin=pin_input.get()))
+        sign_button.pack()
+        back_button = tk.Button(self, text="Go back", command=lambda: controller.show_view("StartPage"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
+        back_button.pack(side="bottom")
         
 
 if __name__ == "__main__":

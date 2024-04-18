@@ -12,7 +12,10 @@ def sign_file(key_path, pin, file_path):
     key = key_file.read().encode()
     key_file.close()
 
-    private_key = load_pem_private_key(key, pin_hash.digest())
+    try:
+        private_key = load_pem_private_key(key, pin_hash.digest())
+    except ValueError:
+        raise ValueError("Incorrect pin")
 
     file_to_sign = open(file_path, "rb")
     file_content = file_to_sign.read()
@@ -29,6 +32,6 @@ def sign_file(key_path, pin, file_path):
         utils.Prehashed(hashes.SHA256())
     )
 
-    print(base64.b64encode(signature).decode())
 
-sign_file("H:\\private.pem", "dupa", "C:\\Users\\jasie\\Downloads\\przykładowe_pytania.txt")
+
+    print(base64.b64encode(signature).decode())
