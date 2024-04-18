@@ -65,7 +65,7 @@ class SignDocument(tk.Frame):
             showerror("Error", "Incorect pin")
             return
         
-        self.controller.show_view("Start Page")
+        self.controller.show_view("StartPage")
         
         
     def __init__(self, parent, controller):
