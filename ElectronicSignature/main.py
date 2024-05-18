@@ -1,10 +1,12 @@
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.exceptions import InvalidSignature
 import tkinter as tk
 from tkinter import filedialog as fd
-from tkinter.messagebox import showerror
+from tkinter.messagebox import showerror, showinfo
 import status_indicators
 from utilities import check_key_status
 from sign import sign_file
+from verify import verify_signature
 
 
 class App(tk.Tk):
@@ -69,7 +71,9 @@ class SignDocument(tk.Frame):
         except ValueError:
             showerror("Error", "Incorect pin")
             return
-        
+        self.file_to_sign.set("")
+        self.pin_input.delete(0, 'end')
+        self.update_idletasks()
         self.controller.show_view("StartPage")
         
         
@@ -79,18 +83,44 @@ class SignDocument(tk.Frame):
         self.file_to_sign = tk.StringVar()
         pin_label = tk.Label(self, text="Enter pin:")
         pin_label.pack()
-        pin_input = tk.Entry(self)
-        pin_input.pack()
+        self.pin_input = tk.Entry(self)
+        self.pin_input.pack()
         pick_file_label = tk.Label(self, textvariable=self.file_to_sign)
         pick_file_label.pack()
         pick_file_button = tk.Button(self, text="Pick file to sign", command=self.chose_file)
         pick_file_button.pack()
-        sign_button = tk.Button(self, text="Sign file", command=lambda: self.sign(pin=pin_input.get()))
+        sign_button = tk.Button(self, text="Sign file", command=lambda: self.sign(pin=self.pin_input.get()))
         sign_button.pack()
         back_button = tk.Button(self, text="Go back", command=lambda: controller.show_view("StartPage"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
         back_button.pack(side="bottom")
 
 class VerifySignature(tk.Frame):
+    def choose_singature(self):
+        self.signature.set(fd.askopenfilename(title="Choose the signature file", filetypes=[("signature files",".xml")]))
+        self.update_idletasks()
+
+    def choose_public_key(self):
+        self.public_key.set(fd.askopenfilename(title="Choose the public key", filetypes=[("public key", ".pub")]))
+        self.update_idletasks()
+
+    def verify_signature(self):
+        if self.signature.get() is None or self.signature.get() == "":
+            showerror("Error", "Please select signature")
+            return
+        if self.public_key.get() is None or self.public_key.get() == "":
+            showerror("Error", "Please select public key")
+            return
+        try:
+            verify_signature(self.signature.get(), self.public_key.get())
+        except InvalidSignature:
+            showerror("Invalid signature", "Signature is invalid")
+            return
+        showinfo("Valid signature", "Signature is valid (:")
+        self.signature.set("")
+        self.public_key.set("")
+        self.update_idletasks()
+        self.controller.show_view("StartPage")
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
@@ -98,13 +128,13 @@ class VerifySignature(tk.Frame):
         self.public_key = tk.StringVar()
         pick_signature_label = tk.Label(self, textvariable=self.signature)
         pick_signature_label.pack()
-        pick_signature_button = tk.Button(self, text="Pick signature to verify")
+        pick_signature_button = tk.Button(self, text="Pick signature to verify", command=self.choose_singature)
         pick_signature_button.pack()
         pick_public_key_label = tk.Label(self, textvariable=self.public_key)
         pick_public_key_label.pack()
-        pick_public_key_button = tk.Button(self, text="Pick public key")
+        pick_public_key_button = tk.Button(self, text="Pick public key", command=self.choose_public_key)
         pick_public_key_button.pack()
-        verify_button = tk.Button(self, text="Verify signature")
+        verify_button = tk.Button(self, text="Verify signature", command=self.verify_signature)
         verify_button.pack()
         back_button = tk.Button(self, text="Go back", command=lambda: controller.show_view("StartPage"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
         back_button.pack(side="bottom") 
