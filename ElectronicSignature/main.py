@@ -47,14 +47,15 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
+
         sign_button = tk.Button(self, text="Sign document", command=lambda: controller.show_view("SignDocument"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
-        sign_button.pack(side="top")
+        sign_button.pack(side="top", pady=20)
         verify_button = tk.Button(self, text="Verify signature", command=lambda: controller.show_view("VerifySignature"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
-        verify_button.pack()
+        verify_button.pack(pady=0)
         encrypt_button = tk.Button(self, text="Encrypt file", command=lambda: controller.show_view("EncryptDocument"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
-        encrypt_button.pack()
+        encrypt_button.pack(pady=20)
         decrypt_button = tk.Button(self, text="Decrypt file", command=lambda: controller.show_view("DecryptDocument"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
-        decrypt_button.pack()
+        decrypt_button.pack(pady=0)
 
 
 class SignDocument(tk.Frame):
