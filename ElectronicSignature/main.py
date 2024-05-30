@@ -7,7 +7,8 @@ import status_indicators
 from utilities import check_key_status
 from sign import sign_file
 from verify import verify_signature
-
+from encrypt import encrypt_file
+from decrypt import decrypt_file
 
 class App(tk.Tk):
     def __init__(self):
@@ -26,10 +27,14 @@ class App(tk.Tk):
         self.frames["StartPage"] = StartPage(parent=container, controller=self)
         self.frames["SignDocument"] = SignDocument(parent=container, controller=self)
         self.frames["VerifySignature"] = VerifySignature(parent=container, controller=self)
+        self.frames["EncryptDocument"] = EncryptDocument(parent=container, controller=self)
+        self.frames["DecryptDocument"] = DecryptDocument(parent=container, controller=self)
 
         self.frames["StartPage"].grid(row=0, column=0, sticky="nsew")
         self.frames["SignDocument"].grid(row=0, column=0, sticky="nsew")
         self.frames["VerifySignature"].grid(row=0, column=0, sticky="nsew")
+        self.frames["EncryptDocument"].grid(row=0, column=0, sticky="nsew")
+        self.frames["DecryptDocument"].grid(row=0, column=0, sticky="nsew")
 
         self.show_view("StartPage")
 
@@ -47,6 +52,10 @@ class StartPage(tk.Frame):
         sign_button.pack(side="top")
         verify_button = tk.Button(self, text="Verify signature", command=lambda: controller.show_view("VerifySignature"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
         verify_button.pack()
+        encrypt_button = tk.Button(self, text="Encrypt file", command=lambda: controller.show_view("EncryptDocument"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
+        encrypt_button.pack()
+        decrypt_button = tk.Button(self, text="Decrypt file", command=lambda: controller.show_view("DecryptDocument"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
+        decrypt_button.pack()
 
 
 class SignDocument(tk.Frame):
@@ -136,6 +145,100 @@ class VerifySignature(tk.Frame):
         pick_public_key_button.pack()
         verify_button = tk.Button(self, text="Verify signature", command=self.verify_signature)
         verify_button.pack()
+        back_button = tk.Button(self, text="Go back", command=lambda: controller.show_view("StartPage"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
+        back_button.pack(side="bottom") 
+
+class EncryptDocument(tk.Frame):
+    def chose_file(self):
+        self.file_to_encrypt.set(fd.askopenfilename(title="Choose a file to encrypt"))
+        self.update_idletasks()
+
+    def chose_key(self):
+        self.public_key.set(fd.askopenfilename(title="Choose a public key"))
+        self.update_idletasks()
+
+    def encrypt(self):
+        if self.file_to_encrypt.get() is None or self.file_to_encrypt.get() == "":
+            showerror("Error", "Please select a file")
+            return
+        if self.public_key.get() is None or self.public_key.get() == "":
+            showerror("Error", "Please select a public key")
+            return
+        try:
+            encrypt_file(self.file_to_encrypt.get(), self.public_key.get()) 
+        except ValueError:
+            showerror("Error", "Error while encrypting, is the file too big?")
+            return
+        showinfo("Success", "Encryption successful (:")
+        self.file_to_encrypt.set("")
+        self.public_key.set("")
+        self.update_idletasks()
+        self.controller.show_view("StartPage")
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.file_to_encrypt = tk.StringVar()
+        self.public_key = tk.StringVar()
+
+        pick_file_button = tk.Button(self, text="Pick file to encrypt", command=self.chose_file)
+        pick_file_button.pack()
+        pick_file_label = tk.Label(self, textvariable=self.file_to_encrypt)
+        pick_file_label.pack()
+
+        pick_key_button = tk.Button(self, text="Pick a public key", command=self.chose_key)
+        pick_key_button.pack()
+        pick_key_label = tk.Label(self, textvariable=self.public_key)
+        pick_key_label.pack()
+
+        encrypt_button = tk.Button(self, text="Encrypt file", command=self.encrypt)
+        encrypt_button.pack()
+
+        back_button = tk.Button(self, text="Go back", command=lambda: controller.show_view("StartPage"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
+        back_button.pack(side="bottom") 
+
+class DecryptDocument(tk.Frame):
+    def chose_file(self):
+        self.file_to_decrypt.set(fd.askopenfilename(title="Choose a file to decrypt"))
+        self.update_idletasks()
+
+    def decrypt(self, pin):
+        if self.file_to_decrypt.get() is None or self.file_to_decrypt.get() == "":
+            showerror("Error", "Please select a file")
+            return
+        private_key_path = check_key_status()
+        if private_key_path == False:
+            showerror("Error", "Private key not detected")
+            return
+        try:
+            decrypt_file(self.file_to_decrypt.get(), private_key_path, pin) 
+        except ValueError:
+            showerror("Error", "Error while decrypting, is the pin correct?")
+            return
+        
+        showinfo("Success", "Decryption successful (:")
+        self.file_to_decrypt.set("")
+        self.update_idletasks()
+        self.controller.show_view("StartPage")
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.file_to_decrypt = tk.StringVar()
+
+        pick_file_button = tk.Button(self, text="Pick file to decrypt", command=self.chose_file)
+        pick_file_button.pack()
+        pick_file_label = tk.Label(self, textvariable=self.file_to_decrypt)
+        pick_file_label.pack()
+
+        pin_label = tk.Label(self, text="Enter pin:")
+        pin_label.pack()
+        self.pin_input = tk.Entry(self)
+        self.pin_input.pack()
+
+        decrypt_button = tk.Button(self, text="Decrypt file", command=lambda: self.decrypt(pin=self.pin_input.get()))
+        decrypt_button.pack()
+
         back_button = tk.Button(self, text="Go back", command=lambda: controller.show_view("StartPage"), bg="#6699ff", fg="#000000", relief=tk.FLAT)
         back_button.pack(side="bottom") 
 
