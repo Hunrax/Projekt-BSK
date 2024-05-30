@@ -1,13 +1,9 @@
-from cryptography.hazmat.primitives.asymmetric import rsa, utils, padding
-from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import utils, padding
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
-from cryptography.exceptions import InvalidSignature
 import hashlib
-import wmi
 import base64
 import xml.etree.ElementTree as ET
-from datetime import datetime
-import os
 from pathlib import Path
 
 def verify_signature(signature_path, public_key_path):

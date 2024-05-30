@@ -1,4 +1,3 @@
-from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.exceptions import InvalidSignature
 import tkinter as tk
 from tkinter import filedialog as fd
