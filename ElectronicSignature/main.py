@@ -59,7 +59,7 @@ class StartPage(tk.Frame):
 
 class SignDocument(tk.Frame):
     def chose_file(self):
-        self.file_to_sign.set(fd.askopenfilename(title="Choose a file to sign"))
+        self.file_to_sign.set(fd.askopenfilename(title="Choose a file to sign", filetypes=[("text file", ".txt"), ("pdf file", ".pdf")]))
         self.update_idletasks()
 
     def sign(self, pin):
@@ -150,11 +150,11 @@ class VerifySignature(tk.Frame):
 
 class EncryptDocument(tk.Frame):
     def chose_file(self):
-        self.file_to_encrypt.set(fd.askopenfilename(title="Choose a file to encrypt"))
+        self.file_to_encrypt.set(fd.askopenfilename(title="Choose a file to encrypt", filetypes=[("text file", ".txt")]))
         self.update_idletasks()
 
     def chose_key(self):
-        self.public_key.set(fd.askopenfilename(title="Choose a public key"))
+        self.public_key.set(fd.askopenfilename(title="Choose a public key", filetypes=[("public key", ".pub")]))
         self.update_idletasks()
 
     def encrypt(self):
@@ -199,7 +199,7 @@ class EncryptDocument(tk.Frame):
 
 class DecryptDocument(tk.Frame):
     def chose_file(self):
-        self.file_to_decrypt.set(fd.askopenfilename(title="Choose a file to decrypt"))
+        self.file_to_decrypt.set(fd.askopenfilename(title="Choose a file to decrypt", filetypes=[("encrypted file", ".encrypted")]))
         self.update_idletasks()
 
     def decrypt(self, pin):
